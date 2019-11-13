@@ -434,11 +434,16 @@ def main(_):
 
     is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
 
-    dist_strategy = tf.contrib.distribute.MirroredStrategy(
-        num_gpus=FLAGS.n_gpus,
-        cross_device_ops=AllReduceCrossDeviceOps('nccl', num_packs=FLAGS.n_gpus),
-        # cross_device_ops=AllReduceCrossDeviceOps('hierarchical_copy'),
-    )
+    # dist_strategy = tf.contrib.distribute.MirroredStrategy(
+    #     num_gpus=FLAGS.n_gpus,
+    #     cross_device_ops=AllReduceCrossDeviceOps('nccl', num_packs=FLAGS.n_gpus),
+    #     # cross_device_ops=AllReduceCrossDeviceOps('hierarchical_copy'),
+    # )
+
+    dist_strategy = tf.distribute.MirroredStrategy(devices=["/gpu:0"],
+                      cross_device_ops=tf.contrib.distribute.AllReduceCrossDeviceOps(
+                         all_reduce_alg="hierarchical_copy"))
+
     log_every_n_steps = 8
     run_config = RunConfig(
         train_distribute=dist_strategy,
